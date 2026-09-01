@@ -1249,3 +1249,72 @@ function installCaseReportActionsFix12(){
   const wrap=document.createElement('div');wrap.className='case-report-actions-fix12';wrap.innerHTML=`<button class="btn btn-small btn-secondary" type="button" onclick="viewCaseReportFix12()">View</button><button class="btn btn-small btn-secondary" type="button" onclick="saveCaseReportFix12()">Save</button><button class="btn btn-small btn-secondary" type="button" onclick="printCaseReportFix12()">Print</button><button class="btn btn-small btn-secondary" type="button" onclick="caseReportEmailFix12()">Email</button><button class="btn btn-small btn-danger" type="button" onclick="deleteCaseFix12()">Delete</button>`;actions.appendChild(wrap)
 }
 document.addEventListener('DOMContentLoaded',()=>setTimeout(installCaseReportActionsFix12,250));
+
+/* ===== RCM Web Mobile Navigation v1 ===== */
+(function(){
+  function closeMobileNav(){ document.body.classList.remove('mobile-nav-open'); }
+  function initMobileNav(){
+    const topbar=document.querySelector('.topbar');
+    const sidebar=document.querySelector('.sidebar');
+    if(!topbar||!sidebar||document.querySelector('.mobile-menu-btn')) return;
+
+    const button=document.createElement('button');
+    button.type='button';
+    button.className='mobile-menu-btn';
+    button.setAttribute('aria-label','Open navigation');
+    button.setAttribute('aria-expanded','false');
+    button.innerHTML='☰';
+    topbar.insertBefore(button,topbar.firstChild);
+
+    const overlay=document.createElement('div');
+    overlay.className='mobile-nav-overlay';
+    overlay.setAttribute('aria-hidden','true');
+    document.body.appendChild(overlay);
+
+    button.addEventListener('click',()=>{
+      const open=document.body.classList.toggle('mobile-nav-open');
+      button.setAttribute('aria-expanded',open?'true':'false');
+    });
+    overlay.addEventListener('click',closeMobileNav);
+    sidebar.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMobileNav));
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMobileNav()});
+    window.addEventListener('resize',()=>{if(window.innerWidth>720)closeMobileNav()});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initMobileNav);
+  else initMobileNav();
+})();
+
+
+/* ===== Web cloud-document links + explicit logout ===== */
+async function attachDoc(cs,c){
+  const f=new FormData(docForm), title=String(f.get('title')||'').trim();
+  if(!title){alert('Enter a Document Title first.');return}
+  const sourceType=String(f.get('sourceType')||'Other Link').trim();
+  let cloudUrl=String(f.get('cloudUrl')||'').trim();
+  if(!cloudUrl){alert('Paste the Google Drive, OneDrive, Dropbox, or other document link.');return}
+  if(!/^https?:\/\//i.test(cloudUrl)) cloudUrl='https://'+cloudUrl;
+  try{new URL(cloudUrl)}catch(_){alert('Enter a valid document link.');return}
+  const rows=load(S.docs);
+  rows.push({id:uid('doc'),caseId:cs.id,clientId:cs.clientId,clientName:cname(c),title,
+    type:String(f.get('type')||''),note:String(f.get('note')||''),sourceType,cloudUrl,
+    fileName:sourceType,createdAt:now()});
+  save(S.docs,rows);docForm.reset();renderDocs(cs.id);toast('Document link saved');
+}
+async function openDoc(id){
+  const d=load(S.docs).find(x=>x.id===id);if(!d)return;
+  if(d.cloudUrl){window.open(d.cloudUrl,'_blank','noopener');return}
+  alert('This older document does not have a cloud link. Re-link it using Google Drive, OneDrive, Dropbox, or Other Link.');
+}
+function renderDocs(id){
+  const rows=load(S.docs).filter(x=>x.caseId===id).slice().reverse();
+  caseDocumentsList.innerHTML=rows.map(d=>`<div class="timeline-item"><div class="actions" style="justify-content:space-between"><strong>${esc(d.title)}</strong><div><button class="btn btn-small btn-secondary" onclick="openDoc('${d.id}')">Open</button> <button class="btn btn-small btn-danger" onclick="delItem('${S.docs}','${d.id}',()=>renderDocs('${id}'))">Delete</button></div></div><div class="sub">${esc(d.type||'Document')} • ${esc(d.sourceType||d.fileName||'Cloud Link')}</div><div class="body">${esc(d.note||'')}</div></div>`).join('')||'<div class="empty"><strong>No documents.</strong></div>';
+}
+function docsInit(){
+  let rows=load(S.docs).slice().reverse(),pg=paginateRows(rows,listPages.documents,STANDARD_PAGE_SIZE);listPages.documents=pg.page;setPagers('documents',pg.page,pg.totalPages,pg.total);
+  documentsBody.innerHTML=pg.rows.map(d=>`<tr><td><button class="btn btn-small btn-secondary" onclick="openDoc('${d.id}')">Open</button></td><td>${esc(d.clientName)}</td><td><a class="link" href="case-detail.html?id=${d.caseId}">${esc(d.title)}</a></td><td>${esc(d.type||'—')}</td><td>${esc(d.sourceType||d.fileName||'Cloud Link')}</td><td>${new Date(d.createdAt).toLocaleDateString()}</td></tr>`).join('')||'<tr><td colspan="6" class="empty"><strong>No documents.</strong></td></tr>';
+}
+async function logoutRCM(){
+  if(!confirm('Log out of Rodriguez Case Manager?'))return;
+  try{if(typeof releaseClientEditLockFix11==='function')await releaseClientEditLockFix11()}catch(_){}
+  if(window.desktopSignOut)await window.desktopSignOut();else location.replace('login.html');
+}

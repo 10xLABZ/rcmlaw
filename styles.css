@@ -449,3 +449,162 @@ body[data-page="clients"] table td:last-child,body[data-page="cases"] table td:l
 /* ===== FIX11: multi-user client edit lock ===== */
 .edit-lock-banner{margin:0 0 14px 0;padding:12px 16px;border:1px solid #d5a64b;border-left:5px solid #d5a64b;background:#fff8e8;border-radius:7px;display:flex;align-items:center;justify-content:space-between;gap:18px;color:#24364b}
 .edit-lock-banner[hidden]{display:none!important}.edit-lock-banner strong{display:block;font-size:12px;letter-spacing:.8px;color:#8a5a00}.edit-lock-banner span{display:block;margin-top:3px;font-size:13px}.rcm-lock-disabled{opacity:.55;pointer-events:none}
+
+/* ===== RCM Web Mobile Responsive Pass v1 ===== */
+.mobile-menu-btn,.mobile-nav-overlay{display:none}
+
+@media(max-width:720px){
+  html,body{max-width:100%;overflow-x:hidden}
+  body{background:var(--cream)}
+  .app{display:block;min-height:100vh}
+  .main{width:100%;min-width:0}
+
+  /* Slide-out navigation drawer */
+  .sidebar{
+    display:flex;
+    position:fixed;
+    z-index:1002;
+    left:0;
+    top:0;
+    width:min(82vw,300px);
+    height:100dvh;
+    transform:translateX(-105%);
+    transition:transform .22s ease;
+    box-shadow:8px 0 28px rgba(0,0,0,.25);
+    overflow-y:auto;
+    padding:14px 12px 18px;
+  }
+  body.mobile-nav-open .sidebar{transform:translateX(0)}
+  .sidebar .brand{padding:2px 10px 14px}
+  .sidebar .brand img{width:132px;max-height:78px}
+  .sidebar .brand small{display:block;font-size:15px}
+  .sidebar .nav a{justify-content:flex-start;padding:11px 12px;font-size:15px}
+  .sidebar .nav a span:not(.ico){display:inline}
+  .sidebar .firm-card{display:block;margin-top:18px}
+
+  .mobile-nav-overlay{
+    display:block;
+    position:fixed;
+    inset:0;
+    z-index:1001;
+    background:rgba(4,17,29,.48);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .22s ease;
+  }
+  body.mobile-nav-open .mobile-nav-overlay{opacity:1;pointer-events:auto}
+  body.mobile-nav-open{overflow:hidden}
+
+  /* Mobile header */
+  .topbar{
+    min-height:60px;
+    height:auto;
+    padding:8px 10px;
+    gap:8px;
+    position:sticky;
+    top:0;
+    z-index:900;
+  }
+  .mobile-menu-btn{
+    display:inline-grid;
+    place-items:center;
+    flex:0 0 42px;
+    width:42px;
+    height:42px;
+    border:1px solid rgba(255,255,255,.24);
+    border-radius:8px;
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    font-size:24px;
+    line-height:1;
+    cursor:pointer;
+  }
+  .topbar .search{flex:1;min-width:0;max-width:none}
+  .topbar .search input{height:42px;padding:9px 36px 9px 11px;font-size:14px}
+  .topbar .search span{top:9px;right:11px}
+  .topbar>.btn-primary{display:none}
+  .top-user{display:none}
+  .notification-bell{flex:0 0 auto}
+
+  /* General spacing / headings */
+  .content{padding:14px 10px 18px}
+  .page-head{align-items:stretch;flex-direction:column;gap:10px;margin-bottom:14px}
+  .page-head h2{font-size:24px;line-height:1.12}
+  .page-head p{font-size:12px}
+  .page-head>.btn,.page-head>.actions{width:100%}
+  .page-head>.btn{min-height:44px}
+  .page-head .actions .btn{flex:1 1 140px}
+  .actions{gap:8px}
+  .actions .btn{min-height:40px}
+
+  /* Cards and grids */
+  .stats,.grid-2,.grid-3,.form-grid,.form-grid-3,.summary-cards,.kpi-grid,.task-columns{grid-template-columns:1fr!important}
+  .stats{gap:9px;margin-bottom:12px}
+  .stat{padding:11px}
+  .stat-icon{width:44px;height:44px;font-size:20px}
+  .stat strong{font-size:25px}
+  .dashboard-row{grid-template-columns:1fr!important;gap:10px;margin-bottom:10px}
+  .dashboard-row>.panel{height:auto!important;min-height:0!important;max-height:none!important}
+  .panel,.frame-group,.form-card{border-radius:8px}
+  .form-card{padding:14px 12px}
+  .panel-head{padding:11px 12px;min-height:44px!important;height:auto!important;flex-wrap:wrap}
+  .panel-body{padding:12px}
+  .section-title{font-size:18px}
+
+  /* Form controls optimized for touch */
+  .field{gap:5px}
+  .field input,.field select,.field textarea{width:100%;min-height:44px;padding:10px 11px;font-size:16px}
+  .field textarea{min-height:100px}
+  .case-notes-box{height:auto!important;min-height:90px!important}
+  .btn{min-height:42px;padding:10px 13px}
+  .btn-small{min-height:36px;padding:8px 10px;font-size:11px}
+
+  /* Tables stay usable instead of crushing columns */
+  .panel{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .panel>table{min-width:620px}
+  .form-card table,.frame-group table{min-width:620px}
+  table{font-size:12px}
+  th,td{padding:9px 10px}
+  .pager{min-width:0;padding:9px 8px;flex-wrap:wrap}
+  .pager-actions{margin-left:auto}
+
+  /* Dashboard cards should show natural content on phones */
+  #tasksDueList,#recentNotesList{overflow:visible;padding:0 10px}
+  #tasksDueList .dash-list-row,#recentNotesList .dash-list-row{height:auto;min-height:48px;max-height:none;padding:8px 0}
+  #tasksDueList strong,#recentNotesList strong,#tasksDueList .sub,#recentNotesList .sub{white-space:normal;overflow:visible;text-overflow:clip}
+  #upcomingDatesList{grid-template-columns:1fr!important;grid-template-rows:none!important;grid-auto-flow:row!important;overflow:visible;padding:8px}
+  #upcomingDatesList .dash-list-row{min-height:54px}
+  .dashboard-row .total-bar{min-width:620px}
+
+  /* Tabs become horizontally scrollable rows */
+  .tabs,.alpha-tabs,.date-filter-tabs{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-width:thin}
+  .tabs .tab,.alpha-tabs .tab{flex:0 0 auto}
+
+  /* Calendar: keep seven-day structure, allow horizontal pan */
+  .calendar-toolbar{flex-wrap:wrap}
+  .calendar-grid{min-width:700px}
+  .panel:has(.calendar-grid){overflow-x:auto}
+  .cal-cell{min-height:78px;padding:5px}
+
+  /* Timeline/action rows */
+  .timeline-item{padding:9px}
+  .timeline-item .actions{align-items:stretch!important}
+  .timeline-item .actions>div{display:flex;flex-wrap:wrap;gap:6px}
+  .note-head-row{flex-direction:column;gap:7px}
+  .note-head-row .actions{width:100%}
+
+  .toast{left:10px;right:10px;bottom:12px;text-align:center}
+  .footer{margin-top:12px;padding:12px 8px;font-size:12px}
+}
+
+@media(max-width:420px){
+  .content{padding-left:8px;padding-right:8px}
+  .topbar{padding-left:8px;padding-right:8px}
+  .page-head h2{font-size:22px}
+  .stat{gap:9px}
+  .stat strong{font-size:23px}
+  .page-head .actions .btn{flex-basis:100%}
+}
+
+/* Logout */
+.nav .logout-link{margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:14px;color:#ffb3b3}.nav .logout-link:hover{color:#fff;background:rgba(160,35,35,.28)}
