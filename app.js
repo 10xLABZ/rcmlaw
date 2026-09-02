@@ -1333,19 +1333,30 @@ function updateGoogleDriveUI(){
   if(rcmGoogleAccessToken){text.textContent='Connected';btn.textContent='RECONNECT';card&&card.classList.add('drive-connected')}
   else{text.textContent='Not connected';btn.textContent='CONNECT GOOGLE DRIVE';card&&card.classList.remove('drive-connected')}
 }
-function initGoogleDriveIntegration(){
-  if(window.google?.accounts?.oauth2&&!rcmGoogleTokenClient){
-    rcmGoogleTokenClient=google.accounts.oauth2.initTokenClient({client_id:RCM_GOOGLE_CLIENT_ID,scope:RCM_GOOGLE_SCOPE,callback:()=>{}});
-  }
-  if(window.gapi&&!rcmPickerReady){try{gapi.load('picker',()=>{rcmPickerReady=true})}catch(_){}}
+function loadGoogleScript(src,id){
+  return new Promise((resolve,reject)=>{
+    if(document.getElementById(id)){
+      const t=setInterval(()=>{
+        if((id==='rcm-google-gis'&&window.google?.accounts?.oauth2)||(id==='rcm-google-api'&&window.gapi)){clearInterval(t);resolve()}
+      },100);
+      setTimeout(()=>{clearInterval(t);reject(new Error('Google library did not finish loading.'))},10000);
+      return;
+    }
+    const s=document.createElement('script');s.id=id;s.src=src;s.async=true;s.onload=resolve;s.onerror=()=>reject(new Error('Could not load Google library.'));document.head.appendChild(s);
+  });
+}
+async function initGoogleDriveIntegration(){
+  if(!window.google?.accounts?.oauth2)await loadGoogleScript('https://accounts.google.com/gsi/client','rcm-google-gis');
+  if(!window.gapi)await loadGoogleScript('https://apis.google.com/js/api.js','rcm-google-api');
+  if(!rcmGoogleTokenClient)rcmGoogleTokenClient=google.accounts.oauth2.initTokenClient({client_id:RCM_GOOGLE_CLIENT_ID,scope:RCM_GOOGLE_SCOPE,callback:()=>{}});
+  if(!rcmPickerReady)await new Promise((resolve,reject)=>{try{gapi.load('picker',{callback:()=>{rcmPickerReady=true;resolve()},onerror:()=>reject(new Error('Google Drive Picker could not load.'))})}catch(e){reject(e)}});
   updateGoogleDriveUI();
 }
-function waitForGoogleLibraries(){let n=0,t=setInterval(()=>{initGoogleDriveIntegration();if((rcmGoogleTokenClient&&rcmPickerReady)||++n>50)clearInterval(t)},200)}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',waitForGoogleLibraries);else waitForGoogleLibraries();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{initGoogleDriveIntegration().catch(()=>{});updateGoogleDriveUI()});else{initGoogleDriveIntegration().catch(()=>{});updateGoogleDriveUI()}
 
 async function googleDriveToken(promptMode){
-  initGoogleDriveIntegration();
-  if(!rcmGoogleTokenClient)throw new Error('Google sign-in is still loading. Try again in a moment.');
+  await initGoogleDriveIntegration();
+  if(!rcmGoogleTokenClient)throw new Error('Google sign-in could not initialize.');
   return new Promise((resolve,reject)=>{
     rcmGoogleTokenClient.callback=(resp)=>{
       if(resp.error){reject(new Error(resp.error));return}
