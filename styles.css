@@ -608,3 +608,10 @@ body[data-page="clients"] table td:last-child,body[data-page="cases"] table td:l
 
 /* Logout */
 .nav .logout-link{margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:14px;color:#ffb3b3}.nav .logout-link:hover{color:#fff;background:rgba(160,35,35,.28)}
+
+/* ===== Google Drive integration ===== */
+.drive-connect-card{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;margin-bottom:14px;border:1px solid var(--border,#d8dee8);border-radius:10px;background:rgba(255,255,255,.55)}
+.drive-connect-card .sub{margin-top:3px;font-size:12px;opacity:.72}
+.drive-doc-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.drive-connected #driveConnectionText{font-weight:700}
+@media(max-width:720px){.drive-connect-card{align-items:flex-start;flex-direction:column}.drive-connect-card .btn,.drive-doc-actions .btn{width:100%}.drive-doc-actions{display:grid;grid-template-columns:1fr;width:100%}}

@@ -1318,3 +1318,78 @@ async function logoutRCM(){
   try{if(typeof releaseClientEditLockFix11==='function')await releaseClientEditLockFix11()}catch(_){}
   if(window.desktopSignOut)await window.desktopSignOut();else location.replace('login.html');
 }
+
+/* ===== Google Drive OAuth + Picker / Upload (RCM web) ===== */
+const RCM_GOOGLE_CLIENT_ID='844502220638-copt0dm80ijhafpqv9irjca0o8an2guh.apps.googleusercontent.com';
+const RCM_GOOGLE_APP_ID='844502220638';
+/* Google Picker requires a browser API key. Set this after creating/restricting the key in Google Cloud. */
+const RCM_GOOGLE_API_KEY='AIzaSyC64QIWPTo1o58hbFNQnkvwMfZE4QZfG7k';
+const RCM_GOOGLE_SCOPE='https://www.googleapis.com/auth/drive.file';
+let rcmGoogleTokenClient=null, rcmGoogleAccessToken=sessionStorage.getItem('rcm_google_drive_token')||'', rcmPickerReady=false;
+
+function updateGoogleDriveUI(){
+  const text=document.getElementById('driveConnectionText'), btn=document.getElementById('driveConnectBtn'), card=document.getElementById('driveConnectCard');
+  if(!text||!btn)return;
+  if(rcmGoogleAccessToken){text.textContent='Connected';btn.textContent='RECONNECT';card&&card.classList.add('drive-connected')}
+  else{text.textContent='Not connected';btn.textContent='CONNECT GOOGLE DRIVE';card&&card.classList.remove('drive-connected')}
+}
+function initGoogleDriveIntegration(){
+  if(window.google?.accounts?.oauth2&&!rcmGoogleTokenClient){
+    rcmGoogleTokenClient=google.accounts.oauth2.initTokenClient({client_id:RCM_GOOGLE_CLIENT_ID,scope:RCM_GOOGLE_SCOPE,callback:()=>{}});
+  }
+  if(window.gapi&&!rcmPickerReady){try{gapi.load('picker',()=>{rcmPickerReady=true})}catch(_){}}
+  updateGoogleDriveUI();
+}
+function waitForGoogleLibraries(){let n=0,t=setInterval(()=>{initGoogleDriveIntegration();if((rcmGoogleTokenClient&&rcmPickerReady)||++n>50)clearInterval(t)},200)}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',waitForGoogleLibraries);else waitForGoogleLibraries();
+
+async function googleDriveToken(promptMode){
+  initGoogleDriveIntegration();
+  if(!rcmGoogleTokenClient)throw new Error('Google sign-in is still loading. Try again in a moment.');
+  return new Promise((resolve,reject)=>{
+    rcmGoogleTokenClient.callback=(resp)=>{
+      if(resp.error){reject(new Error(resp.error));return}
+      rcmGoogleAccessToken=resp.access_token||'';
+      if(rcmGoogleAccessToken)sessionStorage.setItem('rcm_google_drive_token',rcmGoogleAccessToken);
+      updateGoogleDriveUI();resolve(rcmGoogleAccessToken);
+    };
+    rcmGoogleTokenClient.requestAccessToken({prompt:promptMode??(rcmGoogleAccessToken?'':'consent')});
+  });
+}
+async function connectGoogleDrive(){
+  try{await googleDriveToken('consent');toast('Google Drive connected')}catch(e){alert('Google Drive connection failed: '+e.message)}
+}
+async function ensureGoogleDriveConnected(){if(rcmGoogleAccessToken)return rcmGoogleAccessToken;return googleDriveToken('consent')}
+function currentCaseForDrive(){const id=new URLSearchParams(location.search).get('id');const cs=load(S.cases).find(x=>x.id===id);const c=cs?load(S.clients).find(x=>x.id===cs.clientId):null;return{cs,c}}
+function driveFormValues(){const f=new FormData(document.getElementById('docForm'));return{title:String(f.get('title')||'').trim(),type:String(f.get('type')||''),note:String(f.get('note')||'')}}
+function saveDriveDocumentRecord(file){
+  const {cs,c}=currentCaseForDrive();if(!cs||!c){alert('Case information is unavailable.');return}
+  const v=driveFormValues();const title=v.title||file.name||'Google Drive Document';
+  const rows=load(S.docs);rows.push({id:uid('doc'),caseId:cs.id,clientId:cs.clientId,clientName:cname(c),title,type:v.type,note:v.note,sourceType:'Google Drive',cloudUrl:file.url||('https://drive.google.com/open?id='+encodeURIComponent(file.id)),fileName:file.name||title,driveFileId:file.id||'',createdAt:now()});
+  save(S.docs,rows);document.getElementById('docForm').reset();renderDocs(cs.id);toast('Google Drive document linked');
+}
+async function chooseGoogleDriveFile(){
+  try{
+    const token=await ensureGoogleDriveConnected();
+    if(RCM_GOOGLE_API_KEY.startsWith('__')){alert('Google Drive is connected. One final Google Cloud setting is still needed before the Drive file chooser can open: a restricted browser API key for Google Picker.');return}
+    if(!rcmPickerReady){alert('Google Drive file chooser is still loading. Try again in a moment.');return}
+    const view=new google.picker.DocsView(google.picker.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false);
+    const picker=new google.picker.PickerBuilder().setAppId(RCM_GOOGLE_APP_ID).setOAuthToken(token).setDeveloperKey(RCM_GOOGLE_API_KEY).addView(view).setCallback(data=>{
+      if(data.action===google.picker.Action.PICKED&&data.docs?.length){const d=data.docs[0];saveDriveDocumentRecord({id:d.id,name:d.name,url:d.url})}
+    }).build();picker.setVisible(true);
+  }catch(e){alert('Could not open Google Drive: '+e.message)}
+}
+async function uploadFileToGoogleDrive(file){
+  const token=await ensureGoogleDriveConnected();
+  const boundary='rcm_'+Math.random().toString(36).slice(2);const meta={name:file.name};
+  const head='--'+boundary+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify(meta)+'\r\n--'+boundary+'\r\nContent-Type: '+(file.type||'application/octet-stream')+'\r\n\r\n';
+  const tail='\r\n--'+boundary+'--';
+  const body=new Blob([head,file,tail],{type:'multipart/related; boundary='+boundary});
+  const r=await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink',{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'multipart/related; boundary='+boundary},body});
+  if(!r.ok){if(r.status===401){rcmGoogleAccessToken='';sessionStorage.removeItem('rcm_google_drive_token');updateGoogleDriveUI()}throw new Error((await r.text())||('Google Drive upload failed ('+r.status+')'))}
+  return r.json();
+}
+async function uploadGoogleDriveFile(){
+  try{await ensureGoogleDriveConnected()}catch(e){alert('Google Drive connection failed: '+e.message);return}
+  const input=document.getElementById('driveUploadInput');if(!input)return;input.value='';input.onchange=async()=>{const file=input.files?.[0];if(!file)return;try{toast('Uploading to Google Drive...');const d=await uploadFileToGoogleDrive(file);saveDriveDocumentRecord({id:d.id,name:d.name,url:d.webViewLink})}catch(e){alert('Upload failed: '+e.message)}};input.click();
+}
