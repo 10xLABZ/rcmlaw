@@ -29,3 +29,5 @@ Known web-test limitations
 Security
 - The publishable Supabase key is intentionally browser-visible and is protected by Supabase RLS.
 - Never add a service-role/secret key to this repo or browser JavaScript.
+
+RCM v3.7: Calendar detail rows show date + calendar emoji + time; cache key bumped to mobile37 for PC/mobile refresh.
