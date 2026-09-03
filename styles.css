@@ -763,3 +763,43 @@ body[data-page="clients"] table td:last-child,body[data-page="cases"] table td:l
     font-size:7px;
   }
 }
+
+/* ===== RCM v3.9 mobile dashboard width correction + tighter tasks ===== */
+@media(max-width:720px){
+  body[data-page="dashboard"] .dash-upcoming,
+  body[data-page="dashboard"] .dash-tasks{
+    width:100%!important;
+    min-width:0!important;
+  }
+  body[data-page="dashboard"] #upcomingDatesList{
+    width:100%!important;
+    max-width:none!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:repeat(5,auto)!important;
+    grid-auto-flow:row!important;
+    column-gap:8px!important;
+    row-gap:0!important;
+    padding:4px 8px 6px!important;
+  }
+  body[data-page="dashboard"] #upcomingDatesList .dash-list-row{
+    width:100%!important;
+    max-width:none!important;
+    justify-self:stretch!important;
+  }
+  body[data-page="dashboard"] #tasksDueList{
+    width:100%!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-rows:repeat(3,auto)!important;
+    column-gap:8px!important;
+    row-gap:0!important;
+    padding:3px 8px 8px!important;
+  }
+  body[data-page="dashboard"] #tasksDueList .dash-list-row{
+    width:100%!important;
+    min-height:42px!important;
+    padding:4px 0!important;
+    justify-self:stretch!important;
+  }
+  body[data-page="dashboard"] #tasksDueList .dash-grow strong{font-size:10px!important}
+  body[data-page="dashboard"] #tasksDueList .sub{font-size:8px!important;margin-top:2px}
+}
