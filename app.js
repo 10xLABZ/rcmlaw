@@ -870,10 +870,19 @@ function detectDocumentSource(path){
   if(x.includes('dropbox'))return 'dropbox';
   return 'local';
 }
-function sourceLabel(s){
-  return ({google_drive:'◈ Google Drive',onedrive:'☁ OneDrive',dropbox:'◇ Dropbox',local:'▣ Local PC',other:'○ Other'})[s]||'▣ Local PC';
+function normalizeDocumentSource(s){
+  const x=String(s||'').trim().toLowerCase().replace(/[\s-]+/g,'_');
+  if(x==='google_drive'||x==='googledrive'||x==='my_drive')return 'google_drive';
+  if(x==='onedrive'||x==='one_drive')return 'onedrive';
+  if(x==='dropbox')return 'dropbox';
+  if(x==='other'||x==='other_link'||x==='cloud_link')return 'other';
+  return 'local';
 }
-function sourceBadge(s){return `<span class="source-badge source-${esc(s||'local')}">${esc(sourceLabel(s))}</span>`}
+function sourceLabel(s){
+  const n=normalizeDocumentSource(s);
+  return ({google_drive:'◈ Google Drive',onedrive:'☁ OneDrive',dropbox:'◇ Dropbox',local:'▣ Local PC',other:'○ Other'})[n];
+}
+function sourceBadge(s){const n=normalizeDocumentSource(s);return `<span class="source-badge source-${esc(n)}">${esc(sourceLabel(n))}</span>`}
 
 attachDoc=async function(cs,c){
   let f=new FormData(docForm),title=String(f.get('title')||'').trim();
@@ -1319,7 +1328,7 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(installCaseReportAct
 async function attachDoc(cs,c){
   const f=new FormData(docForm), title=String(f.get('title')||'').trim();
   if(!title){alert('Enter a Document Title first.');return}
-  const sourceType=String(f.get('sourceType')||'Other Link').trim();
+  const sourceType=normalizeDocumentSource(String(f.get('sourceType')||'Other Link').trim());
   let cloudUrl=String(f.get('cloudUrl')||'').trim();
   if(!cloudUrl){alert('Paste the Google Drive, OneDrive, Dropbox, or other document link.');return}
   if(!/^https?:\/\//i.test(cloudUrl)) cloudUrl='https://'+cloudUrl;
@@ -1416,7 +1425,7 @@ function driveFormValues(){const f=new FormData(document.getElementById('docForm
 function saveDriveDocumentRecord(file){
   const {cs,c}=currentCaseForDrive();if(!cs||!c){alert('Case information is unavailable.');return}
   const v=driveFormValues();const title=v.title||file.name||'Google Drive Document';
-  const rows=load(S.docs);rows.push({id:uid('doc'),caseId:cs.id,clientId:cs.clientId,clientName:cname(c),title,type:v.type,note:v.note,sourceType:'Google Drive',cloudUrl:file.url||('https://drive.google.com/open?id='+encodeURIComponent(file.id)),fileName:file.name||title,driveFileId:file.id||'',createdAt:now()});
+  const rows=load(S.docs);rows.push({id:uid('doc'),caseId:cs.id,clientId:cs.clientId,clientName:cname(c),title,type:v.type,note:v.note,sourceType:'google_drive',cloudUrl:file.url||('https://drive.google.com/open?id='+encodeURIComponent(file.id)),fileName:file.name||title,driveFileId:file.id||'',createdAt:now()});
   return save(S.docs,rows).then(()=>{document.getElementById('docForm').reset();renderDocs(cs.id);toast('Google Drive document linked')});
 }
 
