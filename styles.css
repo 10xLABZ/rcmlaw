@@ -619,3 +619,54 @@ body[data-page="clients"] table td:last-child,body[data-page="cases"] table td:l
 .drive-account-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .drive-disconnect-btn{font-size:12px}
 @media(max-width:720px){.drive-account-actions{width:100%;display:grid;grid-template-columns:1fr}.drive-account-actions .btn{width:100%}}
+
+
+/* ===== RCM Mobile Premium Layout v2 ===== */
+.mobile-brand-mark,.mobile-bottom-nav{display:none}
+@media(max-width:720px){
+  body{padding-bottom:70px}
+  .topbar{height:56px;min-height:56px;padding:6px 10px;justify-content:space-between}
+  .mobile-brand-mark{display:flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;overflow:hidden}
+  .mobile-brand-mark img{width:42px;height:42px;object-fit:contain}
+  .mobile-menu-btn{order:20;flex:0 0 42px;width:42px;height:42px;border:0;background:transparent;font-size:25px}
+  .topbar .search{display:none}
+  .topbar>.notification-bell{order:15;margin-left:auto}
+  .topbar>.btn-primary,.top-user{display:none}
+
+  .content{padding:10px 10px 14px}
+  body[data-page="dashboard"] .page-head{margin-bottom:8px;gap:2px}
+  body[data-page="dashboard"] .page-head h2{font-size:21px}
+  body[data-page="dashboard"] .page-head p{font-size:11px;margin-top:1px}
+  body[data-page="dashboard"] .page-head>.btn{display:none}
+  body[data-page="dashboard"] .stats{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px;margin-bottom:9px}
+  body[data-page="dashboard"] .stat{min-height:62px;padding:8px 9px;gap:8px;border-radius:9px}
+  body[data-page="dashboard"] .stat-icon{width:34px;height:34px;font-size:16px;border-radius:7px;flex:0 0 34px}
+  body[data-page="dashboard"] .stat label{font-size:9px;line-height:1.05;letter-spacing:.15px}
+  body[data-page="dashboard"] .stat strong{font-size:21px;line-height:1.05;margin-top:2px}
+  body[data-page="dashboard"] .dashboard-row{gap:8px;margin-bottom:8px}
+  body[data-page="dashboard"] .panel-head{padding:9px 10px;min-height:38px!important;font-size:11px}
+  body[data-page="dashboard"] .panel-head .link{font-size:10px}
+  body[data-page="dashboard"] .dash-list-row{min-height:42px!important;padding:6px 0!important}
+  body[data-page="dashboard"] .dash-grow strong{font-size:11px}
+  body[data-page="dashboard"] .sub{font-size:9px}
+  body[data-page="dashboard"] .date-pill{width:48px;flex-basis:48px}
+  body[data-page="dashboard"] .date-pill b{font-size:10px;padding:3px}
+  body[data-page="dashboard"] .date-pill span{font-size:8px;padding:2px}
+  body[data-page="dashboard"] table{font-size:10px}
+  body[data-page="dashboard"] th,body[data-page="dashboard"] td{padding:7px 8px}
+  body[data-page="dashboard"] .panel>table{min-width:520px}
+  body[data-page="dashboard"] .footer{display:none}
+
+  .mobile-bottom-nav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;height:64px;z-index:1000;background:#071d32;border-top:2px solid var(--gold);box-shadow:0 -4px 18px rgba(0,0,0,.18);padding-bottom:env(safe-area-inset-bottom)}
+  .mobile-bottom-nav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#e9eef3;font-size:9px;font-weight:700;min-width:0}
+  .mobile-bottom-nav a .mbn-icon{font-size:19px;line-height:1}
+  .mobile-bottom-nav a.active{color:#f1cf7b;background:rgba(255,255,255,.045)}
+  .mobile-bottom-nav a.mobile-new-client{position:relative;color:#10253d}
+  .mobile-bottom-nav a.mobile-new-client .mbn-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:linear-gradient(180deg,var(--gold2),var(--gold));font-size:25px;font-weight:900;margin-top:-16px;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+  .mobile-bottom-nav a.mobile-new-client span:last-child{color:#f1cf7b}
+  .toast{bottom:76px}
+}
+@media(max-width:420px){
+ body[data-page="dashboard"] .stat{min-height:58px;padding:7px 8px}
+ body[data-page="dashboard"] .stat strong{font-size:19px}
+}

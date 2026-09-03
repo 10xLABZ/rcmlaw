@@ -1266,10 +1266,31 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(installCaseReportAct
     button.innerHTML='☰';
     topbar.insertBefore(button,topbar.firstChild);
 
+    const brandMark=document.createElement('a');
+    brandMark.className='mobile-brand-mark';
+    brandMark.href='index.html';
+    brandMark.setAttribute('aria-label','Dashboard');
+    brandMark.innerHTML='<img src="icon1.png" alt="Rodriguez Law Firm">';
+    topbar.insertBefore(brandMark,topbar.firstChild);
+
     const overlay=document.createElement('div');
     overlay.className='mobile-nav-overlay';
     overlay.setAttribute('aria-hidden','true');
     document.body.appendChild(overlay);
+
+    const page=document.body.dataset.page||'';
+    const bottom=document.createElement('nav');
+    bottom.className='mobile-bottom-nav';
+    bottom.setAttribute('aria-label','Mobile primary navigation');
+    const items=[
+      ['dashboard','index.html','⌂','Dashboard'],
+      ['clients','clients.html','♙','Clients'],
+      ['new','add-client.html','＋','New Client'],
+      ['cases','cases.html','▣','Cases'],
+      ['calendar','calendar.html','▦','Calendar']
+    ];
+    bottom.innerHTML=items.map(([key,href,icon,label])=>`<a href="${href}" class="${page===key?'active ':''}${key==='new'?'mobile-new-client':''}"><span class="mbn-icon">${icon}</span><span>${label}</span></a>`).join('');
+    document.body.appendChild(bottom);
 
     button.addEventListener('click',()=>{
       const open=document.body.classList.toggle('mobile-nav-open');
