@@ -1328,10 +1328,10 @@ const RCM_GOOGLE_SCOPE='https://www.googleapis.com/auth/drive.file';
 let rcmGoogleTokenClient=null, rcmGoogleAccessToken=sessionStorage.getItem('rcm_google_drive_token')||'', rcmPickerReady=false;
 
 function updateGoogleDriveUI(){
-  const text=document.getElementById('driveConnectionText'), btn=document.getElementById('driveConnectBtn'), card=document.getElementById('driveConnectCard');
+  const text=document.getElementById('driveConnectionText'), btn=document.getElementById('driveConnectBtn'), disconnectBtn=document.getElementById('driveDisconnectBtn'), card=document.getElementById('driveConnectCard');
   if(!text||!btn)return;
-  if(rcmGoogleAccessToken){text.textContent='Connected';btn.textContent='RECONNECT';card&&card.classList.add('drive-connected')}
-  else{text.textContent='Not connected';btn.textContent='CONNECT GOOGLE DRIVE';card&&card.classList.remove('drive-connected')}
+  if(rcmGoogleAccessToken){text.textContent='Connected';btn.textContent='RECONNECT';if(disconnectBtn)disconnectBtn.hidden=false;card&&card.classList.add('drive-connected')}
+  else{text.textContent='Not connected';btn.textContent='CONNECT GOOGLE DRIVE';if(disconnectBtn)disconnectBtn.hidden=true;card&&card.classList.remove('drive-connected')}
 }
 function loadGoogleScript(src,id){
   return new Promise((resolve,reject)=>{
@@ -1370,6 +1370,16 @@ async function googleDriveToken(promptMode){
 async function connectGoogleDrive(){
   try{await googleDriveToken('consent');toast('Google Drive connected')}catch(e){alert('Google Drive connection failed: '+e.message)}
 }
+async function disconnectGoogleDrive(){
+  const token=rcmGoogleAccessToken;
+  rcmGoogleAccessToken='';
+  sessionStorage.removeItem('rcm_google_drive_token');
+  updateGoogleDriveUI();
+  if(token&&window.google?.accounts?.oauth2?.revoke){
+    try{await new Promise(resolve=>google.accounts.oauth2.revoke(token,()=>resolve()))}catch(_){}
+  }
+  toast('Google Drive disconnected');
+}
 async function ensureGoogleDriveConnected(){if(rcmGoogleAccessToken)return rcmGoogleAccessToken;return googleDriveToken('consent')}
 function currentCaseForDrive(){const id=new URLSearchParams(location.search).get('id');const cs=load(S.cases).find(x=>x.id===id);const c=cs?load(S.clients).find(x=>x.id===cs.clientId):null;return{cs,c}}
 function driveFormValues(){const f=new FormData(document.getElementById('docForm'));return{title:String(f.get('title')||'').trim(),type:String(f.get('type')||''),note:String(f.get('note')||'')}}
@@ -1384,7 +1394,7 @@ async function chooseGoogleDriveFile(){
     const token=await ensureGoogleDriveConnected();
     if(RCM_GOOGLE_API_KEY.startsWith('__')){alert('Google Drive is connected. One final Google Cloud setting is still needed before the Drive file chooser can open: a restricted browser API key for Google Picker.');return}
     if(!rcmPickerReady){alert('Google Drive file chooser is still loading. Try again in a moment.');return}
-    const view=new google.picker.DocsView(google.picker.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false);
+    const view=new google.picker.DocsView(google.picker.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false).setMode(google.picker.DocsViewMode.LIST);
     const picker=new google.picker.PickerBuilder().setAppId(RCM_GOOGLE_APP_ID).setOAuthToken(token).setDeveloperKey(RCM_GOOGLE_API_KEY).addView(view).setCallback(data=>{
       if(data.action===google.picker.Action.PICKED&&data.docs?.length){const d=data.docs[0];saveDriveDocumentRecord({id:d.id,name:d.name,url:d.url})}
     }).build();picker.setVisible(true);

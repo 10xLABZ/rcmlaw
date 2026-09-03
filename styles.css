@@ -615,3 +615,7 @@ body[data-page="clients"] table td:last-child,body[data-page="cases"] table td:l
 .drive-doc-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .drive-connected #driveConnectionText{font-weight:700}
 @media(max-width:720px){.drive-connect-card{align-items:flex-start;flex-direction:column}.drive-connect-card .btn,.drive-doc-actions .btn{width:100%}.drive-doc-actions{display:grid;grid-template-columns:1fr;width:100%}}
+
+.drive-account-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.drive-disconnect-btn{font-size:12px}
+@media(max-width:720px){.drive-account-actions{width:100%;display:grid;grid-template-columns:1fr}.drive-account-actions .btn{width:100%}}
