@@ -29,7 +29,7 @@
     'rlaw_payments_v4':['payments',{id:'id',caseId:'case_id',clientId:'client_id',invoiceId:'invoice_id',amount:'amount',date:'date',method:'method',reference:'reference',note:'note',createdAt:'created_at'}],
     'rlaw_invoices_v4':['invoices',{id:'id',caseId:'case_id',clientId:'client_id',number:'number',date:'date',dueDate:'due_date',description:'description',amount:'amount',status:'status',note:'note',createdAt:'created_at'}],
     'rlaw_court_dates_v1':['court_dates',{id:'id',caseId:'case_id',clientId:'client_id',date:'date',time:'time',type:'type',note:'note',done:'done',completionNote:'completion_note',createdAt:'created_at',completedAt:'completed_at'}],
-    'rlaw_legal_dates_v1':['legal_dates',{id:'id',caseId:'case_id',clientId:'client_id',date:'date',type:'type',note:'note',done:'done',completionNote:'completion_note',createdAt:'created_at',completedAt:'completed_at'}],
+    'rlaw_legal_dates_v1':['legal_dates',{id:'id',caseId:'case_id',clientId:'client_id',date:'date',time:'time',type:'type',note:'note',done:'done',completionNote:'completion_note',createdAt:'created_at',completedAt:'completed_at'}],
     'rlaw_opposing_counsel_v1':['opposing_counsel',{id:'id',caseId:'case_id',clientId:'client_id',attorneyName:'attorney_name',firm:'firm',phone:'phone',email:'email',address:'address',note:'note',createdAt:'created_at',updatedAt:'updated_at'}],
     'rlaw_docs_v4':['documents',{id:'id',caseId:'case_id',clientId:'client_id',clientName:'client_name',title:'title',type:'type',note:'note',fileName:'file_name',filePath:'file_path',sourceType:'source_type',cloudUrl:'cloud_url',createdAt:'created_at'}]
   };

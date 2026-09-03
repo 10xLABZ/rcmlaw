@@ -670,3 +670,39 @@ body[data-page="clients"] table td:last-child,body[data-page="cases"] table td:l
  body[data-page="dashboard"] .stat{min-height:58px;padding:7px 8px}
  body[data-page="dashboard"] .stat strong{font-size:19px}
 }
+
+
+/* ===== RCM Mobile v3.5 dashboard order / compact grids / fitted calendar ===== */
+.dash-time{white-space:nowrap;margin-left:5px;font-weight:700;color:#465568}
+@media(max-width:720px){
+  body[data-page="dashboard"] .dashboard-row{display:contents}
+  body[data-page="dashboard"] .dash-upcoming{order:1;margin-bottom:8px}
+  body[data-page="dashboard"] .dash-tasks{order:2;margin-bottom:8px}
+  body[data-page="dashboard"] .dash-active-cases{order:3;margin-bottom:8px}
+  body[data-page="dashboard"] .dash-notes{order:4;margin-bottom:8px}
+  body[data-page="dashboard"] .dash-recent-clients{order:5;margin-bottom:8px}
+  body[data-page="dashboard"] .dash-payments{order:6;margin-bottom:8px}
+  body[data-page="dashboard"] .content{display:flex;flex-direction:column}
+  body[data-page="dashboard"] .page-head{order:-3}
+  body[data-page="dashboard"] .stats{order:-2}
+  body[data-page="dashboard"] #upcomingDatesList,
+  body[data-page="dashboard"] #tasksDueList{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(3,auto)!important;grid-auto-flow:row!important;gap:0 10px;padding:4px 10px!important}
+  body[data-page="dashboard"] #upcomingDatesList .dash-list-row:nth-child(n+7),
+  body[data-page="dashboard"] #tasksDueList .dash-list-row:nth-child(n+7){display:none!important}
+  body[data-page="dashboard"] #upcomingDatesList .dash-list-row,
+  body[data-page="dashboard"] #tasksDueList .dash-list-row{min-width:0;min-height:48px!important}
+  body[data-page="dashboard"] #upcomingDatesList .date-pill{width:42px;flex-basis:42px}
+  body[data-page="dashboard"] #upcomingDatesList .dash-grow strong,
+  body[data-page="dashboard"] #tasksDueList .dash-grow strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  body[data-page="dashboard"] .dash-time{display:inline;font-size:9px;margin-left:3px}
+
+  body[data-page="calendar"] .content>.grid-2{grid-template-columns:1fr!important}
+  body[data-page="calendar"] .panel{overflow:hidden}
+  body[data-page="calendar"] .calendar-grid{min-width:0!important;width:100%;grid-template-columns:repeat(7,minmax(0,1fr))!important}
+  body[data-page="calendar"] .cal-cell{min-width:0!important;min-height:54px!important;padding:3px 2px!important;font-size:10px}
+  body[data-page="calendar"] .cal-head>div{font-size:9px;padding:5px 1px}
+  body[data-page="calendar"] .cal-event{font-size:7px!important;padding:1px!important;white-space:nowrap;overflow:hidden;text-overflow:clip}
+  body[data-page="calendar"] .cal-count{font-size:8px}
+  body[data-page="calendar"] .calendar-toolbar{display:grid;grid-template-columns:repeat(3,1fr);width:100%;gap:5px}
+  body[data-page="calendar"] .calendar-toolbar .btn{min-width:0;padding:7px 3px;font-size:9px}
+}
