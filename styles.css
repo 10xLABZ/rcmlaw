@@ -860,3 +860,118 @@ body[data-page="dashboard"] #tasksDueList .dash-list-row{
     padding:3px 0!important;
   }
 }
+
+
+/* ===== RCM v3.11 appointment-card redesign =====
+   Reference layout: vertical event tab + month/day/time + client/detail + chevron.
+   Dashboard panel dimensions and 2x5 grid are unchanged. */
+body[data-page="dashboard"] #upcomingDatesList .appointment-card{
+  position:relative!important;
+  display:flex!important;
+  align-items:stretch!important;
+  gap:0!important;
+  padding:0!important;
+  border:1px solid #dfe3e8!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  overflow:hidden!important;
+  box-shadow:0 2px 7px rgba(10,34,59,.06)!important;
+}
+body[data-page="dashboard"] #upcomingDatesList .appt-kind{
+  flex:0 0 34px;
+  background:#0b2b66;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  writing-mode:vertical-rl;
+  transform:rotate(180deg);
+  font-size:8px;
+  font-weight:900;
+  letter-spacing:1.2px;
+}
+body[data-page="dashboard"] #upcomingDatesList .appt-date{
+  flex:0 0 62px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:3px 5px;
+  border-right:1px solid #e4e7eb;
+  background:#fcfcfd;
+  line-height:1;
+}
+body[data-page="dashboard"] #upcomingDatesList .appt-month{
+  font-size:8px;
+  color:#5e6268;
+  letter-spacing:.4px;
+  margin-bottom:1px;
+}
+body[data-page="dashboard"] #upcomingDatesList .appt-day{
+  font-size:20px;
+  color:#080b0f;
+  line-height:1;
+  font-weight:900;
+}
+body[data-page="dashboard"] #upcomingDatesList .appt-time{
+  width:100%;
+  margin-top:3px;
+  padding-top:3px;
+  border-top:1px solid #d9dde2;
+  text-align:center;
+  font-size:8px;
+  font-weight:900;
+  color:#0b2b66;
+  white-space:nowrap;
+}
+body[data-page="dashboard"] #upcomingDatesList .appt-copy{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:4px 22px 4px 9px;
+  min-width:0;
+}
+body[data-page="dashboard"] #upcomingDatesList .appt-copy strong{
+  font-size:11px!important;
+  line-height:1.1;
+  font-weight:900;
+  color:#090d12;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  padding-bottom:3px;
+  border-bottom:1px solid #e5e7ea;
+}
+body[data-page="dashboard"] #upcomingDatesList .appt-copy .sub{
+  display:block!important;
+  margin-top:3px;
+  font-size:9px!important;
+  line-height:1.1;
+  color:#60656c;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+body[data-page="dashboard"] #upcomingDatesList .appt-chevron{
+  position:absolute;
+  right:7px;
+  top:50%;
+  transform:translateY(-52%);
+  color:#74787d;
+  font-size:24px;
+  font-weight:300;
+  line-height:1;
+}
+body[data-page="dashboard"] #upcomingDatesList .time-pill,
+body[data-page="dashboard"] #upcomingDatesList .date-pill{display:none!important}
+
+@media(max-width:720px){
+  body[data-page="dashboard"] #upcomingDatesList .appt-kind{flex-basis:27px;font-size:7px;letter-spacing:.8px}
+  body[data-page="dashboard"] #upcomingDatesList .appt-date{flex-basis:53px;padding-left:3px;padding-right:3px}
+  body[data-page="dashboard"] #upcomingDatesList .appt-day{font-size:18px}
+  body[data-page="dashboard"] #upcomingDatesList .appt-time{font-size:7px}
+  body[data-page="dashboard"] #upcomingDatesList .appt-copy{padding-left:6px;padding-right:17px}
+  body[data-page="dashboard"] #upcomingDatesList .appt-copy strong{font-size:9px!important}
+  body[data-page="dashboard"] #upcomingDatesList .appt-copy .sub{font-size:7px!important}
+  body[data-page="dashboard"] #upcomingDatesList .appt-chevron{right:4px;font-size:19px}
+}
