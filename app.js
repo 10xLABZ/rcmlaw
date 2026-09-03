@@ -76,7 +76,12 @@ function toggleMonthDetails(id,m){let row=document.getElementById(id);if(row.sty
 let cy,cmth,calendarFilter='All';function calendarInit(){let n=new Date();cy=n.getFullYear();cmth=n.getMonth();document.querySelectorAll('#calendarFilters .tab').forEach(t=>t.onclick=()=>{calendarFilter=t.dataset.filter;document.querySelectorAll('#calendarFilters .tab').forEach(x=>x.classList.toggle('active',x===t));renderCal()});renderCal()}function changeMonth(d){cmth+=d;if(cmth<0){cmth=11;cy--}if(cmth>11){cmth=0;cy++}renderCal()}function goToday(){let n=new Date();cy=n.getFullYear();cmth=n.getMonth();renderCal()}
 function renderCal(){let rows=getCalendarItems().filter(x=>calendarFilter==='All'||x.kind===calendarFilter),s=new Date(cy,cmth,1),e=new Date(cy,cmth+1,0);calendarTitle.textContent=s.toLocaleDateString('en-US',{month:'long',year:'numeric'});let out='<div class="calendar-grid cal-head">'+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(x=>`<div>${x}</div>`).join('')+'</div><div class="calendar-grid">';for(let i=0;i<s.getDay();i++)out+='<div class="cal-cell muted"></div>';for(let d=1;d<=e.getDate();d++){let iso=`${cy}-${String(cmth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`,r=rows.filter(x=>x.date===iso);out+=`<button class="cal-cell" data-date="${iso}"><b>${d}</b>${r.length?`<span class="cal-count">${r.length}</span>`:''}${r.slice(0,3).map(x=>`<span class="cal-event ${x.kind.toLowerCase()}">${esc(x.kind)}</span>`).join('')}</button>`}out+='</div>';calendarWrap.innerHTML=out;calendarDetails.innerHTML='<div class="empty"><strong>Choose a date.</strong><div class="sub">Details will appear here without overlapping.</div></div>';calendarWrap.querySelectorAll('[data-date]').forEach(b=>b.onclick=()=>{let r=rows.filter(x=>x.date===b.dataset.date);calendarDetails.innerHTML=r.length?r.map(x=>`<a class="calendar-detail-item ${x.kind.toLowerCase()}" href="case-detail.html?id=${x.caseId}"><div class="calendar-detail-title">${esc(x.kind)} — ${esc(x.client)}</div><div class="calendar-detail-meta">📅 ${fmt(x.date)}${x.time?` &nbsp; 🕒 ${esc(fmtTime(x.time))}`:''} • Click to view case</div><div class="calendar-detail-text">${esc(x.title)}</div></a>`).join(''):'<div class="empty"><strong>No '+esc(calendarFilter==='All'?'scheduled items':calendarFilter.toLowerCase()+' items')+' on this date.</strong></div>'})}
 function overviewInit(){let cs=load(S.clients),cases=load(S.cases),ps=load(S.payments),q=cases.reduce((s,c)=>s+(+String(c.serviceQuote||0).replace(/[$,]/g,'')||0),0),p=ps.reduce((s,x)=>s+(+x.amount||0),0);ovClients.textContent=cs.length;ovActive.textContent=cases.filter(c=>c.caseStatus==='Active').length;ovDates.textContent=getDates().length;ovBalance.textContent=money(Math.max(0,q-p));ovOpenTasks.textContent=load(S.tasks).filter(t=>!t.done).length;let g={};cases.filter(c=>c.caseStatus==='Active').forEach(c=>g[c.caseType]=(g[c.caseType]||0)+1);caseTypeOverview.innerHTML=Object.entries(g).map(([k,v])=>`<div class="timeline-item"><strong>${esc(k)}</strong><div class="sub">${v} active case${v===1?'':'s'}</div></div>`).join('')||'<div class="empty"><strong>No active cases.</strong></div>'}
-function settingsInit(){let f=settingsForm,s=loadObj(S.settings);['firmName','address','cityStateZip','phone'].forEach(k=>f.elements[k].value=s[k]||'');f.onsubmit=e=>{e.preventDefault();let o={};for(let[k,v]of new FormData(f).entries())o[k]=String(v);save(S.settings,o);toast('Settings saved')}}
+const RCM_FIRM_DEFAULTS={firmName:'Rodriguez Law Firm, LLC',address:'349 West Main Street',cityStateZip:'Meriden, CT 06451',phone:'(203) 630-0406'};
+function currentFirmSettings(){const s=loadObj(S.settings)||{};return {...RCM_FIRM_DEFAULTS,...Object.fromEntries(Object.entries(s).filter(([k,v])=>Object.prototype.hasOwnProperty.call(RCM_FIRM_DEFAULTS,k)&&String(v||'').trim()))}}
+function renderFirmInformation(){const s=currentFirmSettings();const map={firmCurrentName:'firmName',firmCurrentAddress:'address',firmCurrentCity:'cityStateZip',firmCurrentPhone:'phone'};for(const [id,k] of Object.entries(map)){const el=document.getElementById(id);if(el)el.textContent=s[k]}const f=document.getElementById('settingsForm');if(f)for(const k of Object.keys(RCM_FIRM_DEFAULTS))if(f.elements[k])f.elements[k].value=s[k]}
+function beginFirmEdit(){const f=document.getElementById('settingsForm');const b=document.getElementById('editFirmBtn');if(f){renderFirmInformation();f.hidden=false}if(b)b.hidden=true}
+function cancelFirmEdit(){const f=document.getElementById('settingsForm');const b=document.getElementById('editFirmBtn');if(f)f.hidden=true;if(b)b.hidden=!isAdminRole(window.__currentUser&&window.__currentUser.role);renderFirmInformation()}
+function settingsInit(){let f=document.getElementById('settingsForm');renderFirmInformation();if(!f)return;f.onsubmit=e=>{e.preventDefault();let o={};for(let[k,v]of new FormData(f).entries())o[k]=String(v).trim();save(S.settings,o);renderFirmInformation();f.hidden=true;const b=document.getElementById('editFirmBtn');if(b)b.hidden=false;toast('Firm settings saved')}}
 function exportData(){let d={version:4,exportedAt:now()};Object.keys(S).forEach(k=>d[k]=k==='settings'?loadObj(S[k]):load(S[k]));let a=document.createElement('a'),u=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));a.href=u;a.download='RodriguezLawFirmBackup.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
 function importData(i){let f=i.files[0],r=new FileReader();r.onload=()=>{try{let d=JSON.parse(r.result);Object.keys(S).forEach(k=>save(S[k],d[k]||(k==='settings'?{}:[])));location.reload()}catch(e){alert('Invalid backup')}};r.readAsText(f)}
 
@@ -921,8 +926,9 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(loadLocalAvatar,120)
 /* ===== RCM v2 FIX4: secured settings + staff creation + safe legacy import ===== */
 function applySettingsSecurity(){
   const admin=isAdminRole(window.__currentUser&&window.__currentUser.role);
-  const form=document.getElementById('settingsForm'),locked=document.getElementById('firmLockedPanel'),imp=document.getElementById('legacyImportPanel');
-  if(form)form.hidden=!admin;if(locked)locked.hidden=admin;if(imp)imp.hidden=!admin;
+  const form=document.getElementById('settingsForm'),locked=document.getElementById('firmLockedPanel'),imp=document.getElementById('legacyImportPanel'),editBtn=document.getElementById('editFirmBtn');
+  if(form)form.hidden=true;if(editBtn)editBtn.hidden=!admin;if(locked)locked.hidden=admin;if(imp)imp.hidden=!admin;
+  renderFirmInformation();
 }
 function openAddUserModal(){const m=document.getElementById('addUserModal');if(m)m.hidden=false}
 function closeAddUserModal(){const m=document.getElementById('addUserModal');if(m)m.hidden=true}
@@ -1018,16 +1024,17 @@ renderAllPaymentsTable=function(){
   ['paymentHistPageTop','paymentHistPageBottom'].forEach(id=>{const x=document.getElementById(id);if(x)x.textContent=`Page ${paymentHistoryPage} of ${totalPages}`});['paymentHistBackTop','paymentHistBackBottom'].forEach(id=>{const x=document.getElementById(id);if(x)x.disabled=paymentHistoryPage<=1});['paymentHistNextTop','paymentHistNextBottom'].forEach(id=>{const x=document.getElementById(id);if(x)x.disabled=paymentHistoryPage>=totalPages});
 };
 
-function userAdminCardFix7(u,caller){
-  const locked=u.role==='system_admin'&&caller!=='system_admin',isInactive=u.active===false;
-  return `<div class="user-admin-row" data-user-id="${esc(u.id)}"><div class="user-admin-name"><strong>${esc([u.first_name,u.last_name].filter(Boolean).join(' ')||'Unnamed User')}</strong><div class="sub">${esc(u.id)}</div></div><input class="ua-first" value="${esc(u.first_name||'')}" placeholder="First name"><input class="ua-last" value="${esc(u.last_name||'')}" placeholder="Last name"><select class="ua-role" ${locked?'disabled':''}><option value="staff">Staff</option><option value="secretary">Secretary</option><option value="attorney">Attorney</option><option value="paralegal">Paralegal</option><option value="billing">Billing</option><option value="admin">Firm Admin</option>${caller==='system_admin'?'<option value="system_admin">10xLABZ System Admin</option>':''}</select><div class="ua-actions"><button class="btn btn-small btn-secondary" ${locked?'disabled':''} onclick="saveManagedUserFix7(this)">Save</button><button class="btn btn-small ${isInactive?'btn-secondary':'btn-danger'}" ${locked?'disabled':''} onclick="toggleManagedUserFix7(this,${isInactive?'true':'false'})">${isInactive?'Reactivate':'Deactivate'}</button>${caller==='system_admin'&&u.role!=='system_admin'?`<button class="btn btn-small btn-danger" onclick="deleteManagedUserFix7(this)">Delete</button>`:''}</div></div>`;
+function userAdminCardFix7(u,caller,currentUserId){
+  const isSelf=String(u.id||'')===String(currentUserId||''),locked=(u.role==='system_admin'&&caller!=='system_admin')||isSelf,isInactive=u.active===false;
+  const selfNote=isSelf?'<span class="ua-current-user">CURRENT USER — ACCOUNT PROTECTED</span>':'';
+  return `<div class="user-admin-row" data-user-id="${esc(u.id)}"><div class="user-admin-name"><strong>${esc([u.first_name,u.last_name].filter(Boolean).join(' ')||'Unnamed User')}</strong><div class="sub">${esc(u.id)}</div>${selfNote}</div><input class="ua-first" value="${esc(u.first_name||'')}" placeholder="First name"><input class="ua-last" value="${esc(u.last_name||'')}" placeholder="Last name"><select class="ua-role" ${locked?'disabled':''}><option value="staff">Staff</option><option value="secretary">Secretary</option><option value="attorney">Attorney</option><option value="paralegal">Paralegal</option><option value="billing">Billing</option><option value="admin">Firm Admin</option>${caller==='system_admin'?'<option value="system_admin">10xLABZ System Admin</option>':''}</select><div class="ua-actions"><button class="btn btn-small btn-secondary" ${locked?'disabled':''} onclick="saveManagedUserFix7(this)">Save</button><button class="btn btn-small ${isInactive?'btn-secondary':'btn-danger'}" ${locked?'disabled':''} title="${isSelf?'You cannot deactivate your own account.':''}" onclick="toggleManagedUserFix7(this,${isInactive?'true':'false'})">${isInactive?'Reactivate':'Deactivate'}</button>${caller==='system_admin'&&u.role!=='system_admin'?`<button class="btn btn-small btn-danger" ${isSelf?'disabled title="You cannot delete your own account."':''} onclick="deleteManagedUserFix7(this)">Delete</button>`:''}</div></div>`;
 }
 
 loadUserAdmin=async function(){
   const panel=document.getElementById('userAdminPanel');if(!panel||!isAdminRole(window.__currentUser&&window.__currentUser.role))return;panel.hidden=false;
   const status=document.getElementById('userAdminStatus'),list=document.getElementById('userAdminList');status.textContent='Loading users…';
-  try{const r=await window.pywebview.api.list_profiles();if(!r||!r.ok)throw new Error((r&&r.error)||'Could not load users');status.textContent='';const caller=(r.current_user||{}).role||'staff',profiles=r.profiles||[],active=profiles.filter(u=>u.active!==false),inactive=profiles.filter(u=>u.active===false);
-    list.innerHTML=`<div class="user-list-title"><strong>Active Users (${active.length})</strong></div><div id="activeUserRows">${active.map(u=>userAdminCardFix7(u,caller)).join('')||'<div class="empty"><strong>No active users.</strong></div>'}</div><details class="inactive-users"><summary>Inactive Users (${inactive.length})</summary><div class="inactive-user-rows">${inactive.map(u=>userAdminCardFix7(u,caller)).join('')||'<div class="empty"><strong>No inactive users.</strong></div>'}</div></details>`;
+  try{const r=await window.pywebview.api.list_profiles();if(!r||!r.ok)throw new Error((r&&r.error)||'Could not load users');status.textContent='';const caller=(r.current_user||{}).role||'staff',currentUserId=(r.current_user||{}).id||'',profiles=(r.profiles||[]).filter(u=>u.role!=='system_admin'),active=profiles.filter(u=>u.active!==false),inactive=profiles.filter(u=>u.active===false);
+    list.innerHTML=`<div class="user-list-title"><strong>Active Users (${active.length})</strong></div><div id="activeUserRows">${active.map(u=>userAdminCardFix7(u,caller,currentUserId)).join('')||'<div class="empty"><strong>No active users.</strong></div>'}</div><details class="inactive-users"><summary>Inactive Users (${inactive.length})</summary><div class="inactive-user-rows">${inactive.map(u=>userAdminCardFix7(u,caller,currentUserId)).join('')||'<div class="empty"><strong>No inactive users.</strong></div>'}</div></details>`;
     profiles.forEach(u=>{const row=list.querySelector(`[data-user-id="${u.id}"]`);if(row){const s=row.querySelector('.ua-role');if(s)s.value=u.role||'staff'}});
   }catch(e){status.textContent=String(e.message||e)}
 };
@@ -1330,11 +1337,11 @@ async function openDoc(id){
 }
 function renderDocs(id){
   const rows=load(S.docs).filter(x=>x.caseId===id).slice().reverse();
-  caseDocumentsList.innerHTML=rows.map(d=>`<div class="timeline-item"><div class="actions" style="justify-content:space-between"><strong>${esc(d.title)}</strong><div><button class="btn btn-small btn-secondary" onclick="openDoc('${d.id}')">Open</button> <button class="btn btn-small btn-danger" onclick="delItem('${S.docs}','${d.id}',()=>renderDocs('${id}'))">Delete</button></div></div><div class="sub">${esc(d.type||'Document')} • ${esc(d.sourceType||d.fileName||'Cloud Link')}</div><div class="body">${esc(d.note||'')}</div></div>`).join('')||'<div class="empty"><strong>No documents.</strong></div>';
+  caseDocumentsList.innerHTML=rows.map(d=>`<div class="timeline-item"><div class="actions" style="justify-content:space-between"><strong>${esc(d.title)}</strong><div><button class="btn btn-small btn-secondary" onclick="openDoc('${d.id}')">Open</button> <button class="btn btn-small btn-danger" onclick="delItem('${S.docs}','${d.id}',()=>renderDocs('${id}'))">Delete</button></div></div><div class="sub">${esc(d.type||'Document')} • ${sourceBadge(d.sourceType||(d.driveFileId||d.cloudUrl?.includes('drive.google.com')?'Google Drive':'Cloud Link'))}</div><div class="body">${esc(d.note||'')}</div></div>`).join('')||'<div class="empty"><strong>No documents.</strong></div>';
 }
 function docsInit(){
   let rows=load(S.docs).slice().reverse(),pg=paginateRows(rows,listPages.documents,STANDARD_PAGE_SIZE);listPages.documents=pg.page;setPagers('documents',pg.page,pg.totalPages,pg.total);
-  documentsBody.innerHTML=pg.rows.map(d=>`<tr><td><button class="btn btn-small btn-secondary" onclick="openDoc('${d.id}')">Open</button></td><td>${esc(d.clientName)}</td><td><a class="link" href="case-detail.html?id=${d.caseId}">${esc(d.title)}</a></td><td>${esc(d.type||'—')}</td><td>${esc(d.sourceType||d.fileName||'Cloud Link')}</td><td>${new Date(d.createdAt).toLocaleDateString()}</td></tr>`).join('')||'<tr><td colspan="6" class="empty"><strong>No documents.</strong></td></tr>';
+  documentsBody.innerHTML=pg.rows.map(d=>`<tr><td><button class="btn btn-small btn-secondary" onclick="openDoc('${d.id}')">Open</button></td><td>${esc(d.clientName)}</td><td><a class="link" href="case-detail.html?id=${d.caseId}">${esc(d.title)}</a></td><td>${esc(d.type||'—')}</td><td>${sourceBadge(d.sourceType||(d.driveFileId||d.cloudUrl?.includes('drive.google.com')?'Google Drive':'Cloud Link'))}<div class="sub">${esc(d.fileName||'')}</div></td><td>${new Date(d.createdAt).toLocaleDateString()}</td></tr>`).join('')||'<tr><td colspan="6" class="empty"><strong>No documents.</strong></td></tr>';
 }
 async function logoutRCM(){
   if(!confirm('Log out of Rodriguez Case Manager?'))return;
@@ -1410,7 +1417,31 @@ function saveDriveDocumentRecord(file){
   const {cs,c}=currentCaseForDrive();if(!cs||!c){alert('Case information is unavailable.');return}
   const v=driveFormValues();const title=v.title||file.name||'Google Drive Document';
   const rows=load(S.docs);rows.push({id:uid('doc'),caseId:cs.id,clientId:cs.clientId,clientName:cname(c),title,type:v.type,note:v.note,sourceType:'Google Drive',cloudUrl:file.url||('https://drive.google.com/open?id='+encodeURIComponent(file.id)),fileName:file.name||title,driveFileId:file.id||'',createdAt:now()});
-  save(S.docs,rows);document.getElementById('docForm').reset();renderDocs(cs.id);toast('Google Drive document linked');
+  return save(S.docs,rows).then(()=>{document.getElementById('docForm').reset();renderDocs(cs.id);toast('Google Drive document linked')});
+}
+
+async function fetchGoogleDrivePreview(file){
+  const token=await ensureGoogleDriveConnected();
+  const fields='id,name,mimeType,webViewLink,thumbnailLink,iconLink,size';
+  let r=await fetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(file.id)+'?fields='+encodeURIComponent(fields),{headers:{Authorization:'Bearer '+token}});
+  if(!r.ok)throw new Error((await r.text())||'Google Drive metadata unavailable.');
+  const meta=await r.json();
+  let objectUrl='',previewKind='none';
+  if(String(meta.mimeType||'').startsWith('image/')){
+    r=await fetch('https://www.googleapis.com/drive/v3/files/'+encodeURIComponent(file.id)+'?alt=media',{headers:{Authorization:'Bearer '+token}});
+    if(r.ok){objectUrl=URL.createObjectURL(await r.blob());previewKind='image'}
+  }
+  return {...file,...meta,url:meta.webViewLink||file.url,objectUrl,previewKind};
+}
+function closeDrivePreview(){const m=document.getElementById('rcmDrivePreviewModal');if(!m)return;const u=m.dataset.objectUrl;if(u)URL.revokeObjectURL(u);m.remove()}
+async function previewGoogleDriveSelection(file){
+  closeDrivePreview();
+  let info;try{info=await fetchGoogleDrivePreview(file)}catch(e){info={...file,name:file.name||'Google Drive file',url:file.url||('https://drive.google.com/open?id='+encodeURIComponent(file.id)),previewKind:'none',previewError:String(e.message||e)}}
+  const modal=document.createElement('div');modal.id='rcmDrivePreviewModal';modal.className='drive-preview-modal';modal.dataset.objectUrl=info.objectUrl||'';
+  const visual=info.previewKind==='image'?`<img class="drive-preview-image" src="${esc(info.objectUrl)}" alt="Selected Google Drive file preview">`:`<div class="drive-preview-generic"><strong>${esc(info.name||'Google Drive file')}</strong><span>${esc(info.mimeType||'Preview unavailable for this file type')}</span><a class="link" target="_blank" rel="noopener" href="${esc(info.url||'#')}">OPEN IN GOOGLE DRIVE</a></div>`;
+  modal.innerHTML=`<div class="drive-preview-backdrop" onclick="closeDrivePreview()"></div><section class="drive-preview-card" role="dialog" aria-modal="true" aria-label="Google Drive file preview"><div class="drive-preview-head"><div><strong>Google Drive Preview</strong><div class="sub">${esc(info.name||'Selected file')}</div></div><button class="btn btn-small btn-secondary" type="button" onclick="closeDrivePreview()">CANCEL</button></div><div class="drive-preview-body">${visual}</div><div class="drive-preview-actions"><button class="btn btn-secondary" type="button" onclick="closeDrivePreview()">CANCEL</button><button class="btn btn-primary" id="rcmDriveAttachBtn" type="button">ATTACH TO CASE</button></div></section>`;
+  document.body.appendChild(modal);
+  modal.querySelector('#rcmDriveAttachBtn').onclick=async()=>{try{await saveDriveDocumentRecord({id:info.id,name:info.name,url:info.url});closeDrivePreview()}catch(e){alert('Could not attach Google Drive file: '+e.message)}};
 }
 async function chooseGoogleDriveFile(){
   try{
@@ -1419,7 +1450,7 @@ async function chooseGoogleDriveFile(){
     if(!rcmPickerReady){alert('Google Drive file chooser is still loading. Try again in a moment.');return}
     const view=new google.picker.DocsView(google.picker.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false).setMode(google.picker.DocsViewMode.LIST);
     const picker=new google.picker.PickerBuilder().setAppId(RCM_GOOGLE_APP_ID).setOAuthToken(token).setDeveloperKey(RCM_GOOGLE_API_KEY).addView(view).setCallback(data=>{
-      if(data.action===google.picker.Action.PICKED&&data.docs?.length){const d=data.docs[0];saveDriveDocumentRecord({id:d.id,name:d.name,url:d.url})}
+      if(data.action===google.picker.Action.PICKED&&data.docs?.length){const d=data.docs[0];previewGoogleDriveSelection({id:d.id,name:d.name,url:d.url}).catch(e=>alert('Could not preview Google Drive file: '+e.message))}
     }).build();picker.setVisible(true);
   }catch(e){alert('Could not open Google Drive: '+e.message)}
 }

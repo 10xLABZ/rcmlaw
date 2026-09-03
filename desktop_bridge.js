@@ -15,6 +15,7 @@
   const SESSION_KEY='rcm_web_session_v1';
   const AVATAR_KEY='rcm_web_local_avatar_v1';
   const SETTINGS_KEY='rlaw_settings_v4';
+  const MAX_WORKDAY_SESSION_MS=12*60*60*1000;
 
   const COLLECTIONS={
     'rlaw_clients_v4':['clients',{
@@ -56,7 +57,7 @@
     if(exp && exp-Date.now()/1000>90)return true;
     try{
       const data=await request('POST','/auth/v1/token?grant_type=refresh_token',{refresh_token:session.refresh_token},false,false);
-      session={access_token:data.access_token,refresh_token:data.refresh_token||session.refresh_token,user:data.user||session.user,profile:profile||session.profile||null};
+      session={access_token:data.access_token,refresh_token:data.refresh_token||session.refresh_token,user:data.user||session.user,profile:profile||session.profile||null,session_started_at:session.session_started_at||Date.now()};
       saveSession(session);return true;
     }catch(e){console.warn('Session refresh failed',e);saveSession(null);profile=null;return false}
   }
@@ -114,16 +115,21 @@
       if(!email||!password)return {ok:false,error:'Enter your email and password.'};
       try{
         const data=await request('POST','/auth/v1/token?grant_type=password',{email,password},false);
-        session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,profile:null};saveSession(session);
+        session={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user,profile:null,session_started_at:Date.now()};saveSession(session);
         await fetchProfile();
-        if(profile&&profile.active===false){await api.auth_logout();return {ok:false,error:'This account is inactive. Contact the administrator.'}}
+        if(profile&&profile.active===false){await api.auth_logout();return {ok:false,error:'This account has been disabled. Access has been revoked.'}}
         return {ok:true,user:currentUser()};
       }catch(e){return {ok:false,error:friendlyAuthError(e.message||e)}}
     },
     async auth_status(){
       if(!session||!session.access_token||!session.user)return {authenticated:false,user:null};
+      if(!session.session_started_at){session.session_started_at=Date.now();saveSession(session)}
+      if(Date.now()-Number(session.session_started_at)>MAX_WORKDAY_SESSION_MS){await api.auth_logout();return {authenticated:false,user:null,reason:'session_expired',message:'Your secure RCM workday session has expired. Please sign in again.'}}
       if(!await refreshIfNeeded())return {authenticated:false,user:null};
-      try{if(!profile)await fetchProfile();if(profile&&profile.active===false){await api.auth_logout();return {authenticated:false,user:null}}}catch(e){console.warn(e)}
+      try{
+        await fetchProfile();
+        if(profile&&profile.active===false){await api.auth_logout();return {authenticated:false,user:null,reason:'disabled',message:'This account has been disabled. Access has been revoked.'}}
+      }catch(e){console.warn(e)}
       return {authenticated:true,user:currentUser()};
     },
     async current_user(){if(!profile&&session)try{await fetchProfile()}catch(_){}return currentUser()},
@@ -185,6 +191,7 @@
     async update_profile_admin(userId,firstName,lastName,role,active){
       try{
         if(!profile)await fetchProfile();const caller=String(profile&&profile.role||'staff');if(!['system_admin','admin','owner_admin'].includes(caller))return {ok:false,error:'Administrator access required.'};
+        if(session&&session.user&&String(session.user.id)===String(userId)){const currentRole=String(profile&&profile.role||'staff');if(String(role||'')!==currentRole||active===false)return {ok:false,error:'You cannot deactivate or change the role of your own administrator account.'};}
         role=String(role||'staff').trim();if(role==='system_admin'&&caller!=='system_admin')return {ok:false,error:'Only the 10xLABZ system administrator can assign system_admin.'};
         await request('PATCH',`/rest/v1/profiles?id=eq.${encodeURIComponent(String(userId))}`,{first_name:String(firstName||'').trim()||null,last_name:String(lastName||'').trim()||null,role,active:!!active},true,true,{Prefer:'return=minimal'});
         if(session&&session.user&&String(session.user.id)===String(userId))await fetchProfile();return {ok:true};
@@ -196,7 +203,7 @@
       }catch(e){return {ok:false,error:String(e.message||e)}}
     },
     async delete_user_admin(userId){
-      try{const r=await request('POST','/functions/v1/create-rcm-user',{action:'delete',user_id:String(userId||'')});return (r&&typeof r==='object')?r:{ok:false,error:'Could not delete user.'}}catch(e){return {ok:false,error:String(e.message||e)}}
+      try{if(session&&session.user&&String(session.user.id)===String(userId))return {ok:false,error:'You cannot delete your own account.'};const r=await request('POST','/functions/v1/create-rcm-user',{action:'delete',user_id:String(userId||'')});return (r&&typeof r==='object')?r:{ok:false,error:'Could not delete user.'}}catch(e){return {ok:false,error:String(e.message||e)}}
     },
 
     async preview_legacy_import(){return {ok:false,error:'Legacy SQLite import is desktop-only. Use the existing RCM migration utility for the one-time database import.'}},

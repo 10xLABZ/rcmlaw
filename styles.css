@@ -1034,3 +1034,31 @@ body[data-page="dashboard"] #upcomingDatesList .date-pill{display:none!important
     font-size:14px!important;
   }
 }
+
+
+/* v3.13 Settings + security cleanup */
+.firm-info-panel{overflow:hidden}
+.firm-info-summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.firm-info-summary::-webkit-details-marker{display:none}
+.firm-info-summary:after{content:'▾';font-size:14px;opacity:.7;transition:transform .18s ease}
+.firm-info-panel[open] .firm-info-summary:after{transform:rotate(180deg)}
+.firm-summary-note{margin-left:auto;font-size:11px;font-weight:600;opacity:.62;text-transform:none;letter-spacing:0}
+.firm-current{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:10px}
+.firm-current>div{border:1px solid #e4e8ee;border-radius:9px;padding:10px 12px;background:#fafbfd}
+.firm-current small{display:block;color:#738092;font-size:11px;margin-bottom:3px}
+.firm-current strong{display:block;color:#14253d;font-size:14px}
+.firm-current-help{margin-top:8px}
+.firm-edit-form{margin-top:14px;border-top:1px solid #e4e8ee;padding-top:14px}
+@media(max-width:720px){.firm-current{grid-template-columns:1fr}.firm-summary-note{display:none}}
+
+
+/* RCM v3.14 final mobile/PWA + Drive preview + protected current admin */
+.ua-current-user{display:inline-block;margin-top:4px;padding:3px 7px;border-radius:999px;background:#eef2f7;color:#526174;font-size:10px;font-weight:800;letter-spacing:.04em}
+.drive-preview-modal{position:fixed;inset:0;z-index:99999;display:grid;place-items:center;padding:18px}
+.drive-preview-backdrop{position:absolute;inset:0;background:rgba(7,17,31,.72)}
+.drive-preview-card{position:relative;width:min(720px,94vw);max-height:90vh;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 22px 70px rgba(0,0,0,.35);padding:18px}
+.drive-preview-head,.drive-preview-actions{display:flex;align-items:center;justify-content:space-between;gap:12px}.drive-preview-actions{justify-content:flex-end;margin-top:16px}
+.drive-preview-body{margin-top:14px;min-height:220px;display:grid;place-items:center;background:#f4f6f9;border:1px solid #dfe5ec;border-radius:10px;overflow:hidden}
+.drive-preview-image{display:block;max-width:100%;max-height:62vh;object-fit:contain}
+.drive-preview-generic{padding:36px;text-align:center;display:grid;gap:10px}.drive-preview-generic strong{font-size:18px}.drive-preview-generic span{color:#687386}
+@media(max-width:720px){.drive-preview-modal{padding:10px}.drive-preview-card{width:100%;padding:14px}.drive-preview-body{min-height:180px}.drive-preview-image{max-height:55vh}.drive-preview-actions .btn{flex:1}}
