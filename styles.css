@@ -685,9 +685,9 @@ body[data-page="clients"] table td:last-child,body[data-page="cases"] table td:l
   body[data-page="dashboard"] .content{display:flex;flex-direction:column}
   body[data-page="dashboard"] .page-head{order:-3}
   body[data-page="dashboard"] .stats{order:-2}
-  body[data-page="dashboard"] #upcomingDatesList,
+  body[data-page="dashboard"] #upcomingDatesList{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(5,auto)!important;grid-auto-flow:row!important;gap:0 10px;padding:4px 10px!important}
   body[data-page="dashboard"] #tasksDueList{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;grid-template-rows:repeat(3,auto)!important;grid-auto-flow:row!important;gap:0 10px;padding:4px 10px!important}
-  body[data-page="dashboard"] #upcomingDatesList .dash-list-row:nth-child(n+7),
+  body[data-page="dashboard"] #upcomingDatesList .dash-list-row:nth-child(n+11),
   body[data-page="dashboard"] #tasksDueList .dash-list-row:nth-child(n+7){display:none!important}
   body[data-page="dashboard"] #upcomingDatesList .dash-list-row,
   body[data-page="dashboard"] #tasksDueList .dash-list-row{min-width:0;min-height:48px!important}
