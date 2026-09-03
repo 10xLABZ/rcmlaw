@@ -706,3 +706,60 @@ body[data-page="clients"] table td:last-child,body[data-page="cases"] table td:l
   body[data-page="calendar"] .calendar-toolbar{display:grid;grid-template-columns:repeat(3,1fr);width:100%;gap:5px}
   body[data-page="calendar"] .calendar-toolbar .btn{min-width:0;padding:7px 3px;font-size:9px}
 }
+
+/* ===== RCM v3.6 dashboard stacked time badge ===== */
+#upcomingDatesList .time-pill{
+  flex:0 0 38px;
+  width:38px;
+  align-self:center;
+  border:1px solid #d8b45f;
+  border-radius:7px;
+  overflow:hidden;
+  text-align:center;
+  background:#fff;
+  line-height:1;
+}
+#upcomingDatesList .time-pill b{
+  display:block;
+  font-size:11px;
+  line-height:12px;
+  padding:1px 2px 0;
+  color:var(--ink);
+}
+#upcomingDatesList .time-pill span{
+  display:block;
+  margin:2px 3px 3px;
+  padding:2px 1px;
+  border-radius:3px;
+  background:var(--navy);
+  color:#fff;
+  font-size:8px;
+  font-weight:900;
+  line-height:1;
+}
+#upcomingDatesList .dash-grow{min-width:0}
+#upcomingDatesList .dash-grow strong,
+#upcomingDatesList .dash-grow .sub{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+@media(max-width:700px){
+  body[data-page="dashboard"] #upcomingDatesList .dash-list-row{
+    gap:6px;
+  }
+  body[data-page="dashboard"] #upcomingDatesList .time-pill{
+    flex-basis:31px;
+    width:31px;
+    border-radius:6px;
+  }
+  body[data-page="dashboard"] #upcomingDatesList .time-pill b{
+    font-size:9px;
+    line-height:10px;
+  }
+  body[data-page="dashboard"] #upcomingDatesList .time-pill span{
+    margin:1px 2px 2px;
+    padding:1px 0;
+    font-size:7px;
+  }
+}
